@@ -28,6 +28,18 @@ namespace TelegramSouls.Server
             _sessions = new ConcurrentDictionary<long, User>();
         }
 
+        private void Broadcast(long userId, string text)
+        {
+            foreach (var user in _sessions.Values.Where(i => i.Id != userId))
+            {
+                _client.SendMessage(new SendMessageQuery()
+                {
+                    ChatId = user.Id,
+                    Text = text
+                });
+            }
+        }
+
         private void Handle()
         {
             var message = _queue.Dequeue();
@@ -43,6 +55,8 @@ namespace TelegramSouls.Server
                             Username = message.Username
                         });
                     }
+
+                    Broadcast(message.UserId, string.Format("Такой-то хер {0} вошел, громко хлопнув дверью.", message.Username));
 
                     return;
                 }
@@ -71,14 +85,7 @@ namespace TelegramSouls.Server
                     return;
                 }
 
-                foreach (var user in _sessions.Values.Where(i => i.Id != message.UserId))
-                {
-                    _client.SendMessage(new SendMessageQuery()
-                    {
-                        ChatId = user.Id,
-                        Text = string.Format("{0} {1}: {2}", message.TimeStamp, message.Username, message.Text)
-                    });
-                }
+                Broadcast(message.UserId, string.Format("{0}: {1}", message.Username, message.Text));
             }
         }
 
