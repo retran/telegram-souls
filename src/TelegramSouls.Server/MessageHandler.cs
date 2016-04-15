@@ -1,19 +1,31 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using TelegramSouls.Server.Telegram;
 
 namespace TelegramSouls.Server
 {
+    class User
+    {
+        public long Id;
+        public string Username;
+    }
+
     public class MessageHandler
     {
         private Client _client;
         private MessageQueue _queue;
         private CancellationTokenSource _cancellationTokenSource;
 
+        private ConcurrentDictionary<long, User> _sessions;
+
         public MessageHandler(Client client, MessageQueue queue)
         {
             _client = client;
             _queue = queue;
+            _sessions = new ConcurrentDictionary<long, User>();
         }
 
         private void Handle()
@@ -21,12 +33,52 @@ namespace TelegramSouls.Server
             var message = _queue.Dequeue();
             if (message != null)
             {
-                _client.SendMessage(new SendMessageQuery()
+                if (string.Equals(message.Text, "/start", System.StringComparison.OrdinalIgnoreCase))
                 {
-                    ChatId = message.UserId,
-                    ReplyToMessageId = message.EventId,
-                    Text = message.Text
-                });
+                    if (!_sessions.ContainsKey(message.UserId))
+                    {
+                        _sessions.TryAdd(message.UserId, new User()
+                        {
+                            Id = message.UserId,
+                            Username = message.Username
+                        });
+                    }
+
+                    return;
+                }
+
+                if (!_sessions.ContainsKey(message.UserId))
+                {
+                    return;
+                }
+
+                if (string.Equals(message.Text, "/stop", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    User user;
+                    _sessions.TryRemove(message.UserId, out user);
+                }
+
+                if (string.Equals(message.Text, "/who", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    var list = string.Join(", ", _sessions.Values.Select(v => v.Username));
+                    _client.SendMessage(new SendMessageQuery()
+                    {
+                        ChatId = message.UserId,
+                        Text = list,
+                        ReplyToMessageId = message.EventId
+                    });
+
+                    return;
+                }
+
+                foreach (var user in _sessions.Values.Where(i => i.Id != message.UserId))
+                {
+                    _client.SendMessage(new SendMessageQuery()
+                    {
+                        ChatId = user.Id,
+                        Text = string.Format("{0} {1}: {2}", message.TimeStamp, message.Username, message.Text)
+                    });
+                }
             }
         }
 

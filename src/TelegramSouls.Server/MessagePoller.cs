@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TelegramSouls.Server.Telegram;
@@ -32,12 +33,18 @@ namespace TelegramSouls.Server
 
             foreach (var update in updates.Result)
             {
-                _queue.Enqueue(new Message()
+                if (string.Equals(update.Message.Chat.Type, "private", System.StringComparison.OrdinalIgnoreCase))
                 {
-                    UserId = update.Message.Chat.Id,
-                    EventId = update.Message.MessageId,
-                    Text = update.Message.Text
-                });
+                    _queue.Enqueue(new Message()
+                    {
+                        UserId = update.Message.Chat.Id,
+                        EventId = update.Message.MessageId,
+                        Text = update.Message.Text,
+                        TimeStamp = DateTime.Now,
+                        Username = update.Message.From.Username
+                    });
+                    Console.WriteLine("{0} {1}: {2}", DateTime.Now, update.Message.From.Username, update.Message.Text);
+                }
             }
         }
 
