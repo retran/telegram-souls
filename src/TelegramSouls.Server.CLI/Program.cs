@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using TelegramSouls.Server.Telegram;
 
@@ -13,29 +14,19 @@ namespace TelegramSouls.Server.CLI
 
         static async Task RunAsync()
         {
-            var c = new Client("<your key here>");
-            var me = await c.GetMe();
-            var updates = await c.GetUpdates(null);
-            var last = updates.Result.Last();
-            var offset = last.UpdateId + 1;
-            while (true)
-            {
-                var upd = await c.GetUpdates(new GetUpdatesQuery()
-                {
-                    Offset = offset
-                });
+            var c = new Client("188718743:AAEi9xE4Y8l-0q1KlqtsOYUEKViW6pw0y2A");
+            var queue = new MessageQueue();
 
-                foreach (var m in upd.Result)
-                {
-                    var message = await c.SendMessage(new SendMessageQuery()
-                    {
-                        ChatId = m.Message.Chat.Id,
-                        Text = "TEST",
-                        ReplyToMessageId = m.Message.MessageId
-                    });
-                    offset = m.UpdateId + 1;
-                }
-            }
+            var poller = new MessagePoller(c, queue);
+            var handler = new MessageHandler(c, queue);
+
+            poller.Start();
+            handler.Start();
+
+            Console.ReadKey();
+
+            handler.Stop();
+            poller.Stop();
         }
     }
 }

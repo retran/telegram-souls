@@ -2,7 +2,7 @@
 
 namespace TelegramSouls.Server.Telegram
 {
-    public class TelegramResponse<T>
+    public class Response<T>
     {
         [JsonProperty("ok")]
         public bool Ok;

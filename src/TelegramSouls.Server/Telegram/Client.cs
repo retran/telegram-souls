@@ -1,10 +1,6 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace TelegramSouls.Server.Telegram
@@ -20,7 +16,7 @@ namespace TelegramSouls.Server.Telegram
             _token = token;
         }
 
-        private HttpClient GetHttpClient()
+        private HttpClient CreateHttpClient()
         {
             var client = new HttpClient();
             client.BaseAddress = new Uri(string.Format(_baseUri, _token));
@@ -29,38 +25,37 @@ namespace TelegramSouls.Server.Telegram
             return client;
         }
 
-        public Task<TelegramResponse<User>> GetMe()
+        public Task<Response<User>> GetMe()
         {
-            using (var c = GetHttpClient())
+            using (var c = CreateHttpClient())
             {
                 return c.PostAsJsonAsync("getMe", string.Empty).ContinueWith(task =>
                 {
-                    return task.Result.Content.ReadAsAsync<TelegramResponse<User>>();
+                    return task.Result.Content.ReadAsAsync<Response<User>>();
                 }).Result;
             }
         }
 
-        public Task<TelegramResponse<Update[]>> GetUpdates(GetUpdatesQuery query)
+        public Task<Response<Update[]>> GetUpdates(GetUpdatesQuery query)
         {
-            using (var c = GetHttpClient())
+            using (var c = CreateHttpClient())
             {
                 return c.PostAsJsonAsync("getUpdates", query).ContinueWith(task =>
                 {
-                    return task.Result.Content.ReadAsAsync<TelegramResponse<Update[]>>();
+                    return task.Result.Content.ReadAsAsync<Response<Update[]>>();
                 }).Result;
             }
         }
 
-        public Task<TelegramResponse<Message>> SendMessage(SendMessageQuery query)
+        public Task<Response<Message>> SendMessage(SendMessageQuery query)
         {
-            using (var c = GetHttpClient())
+            using (var c = CreateHttpClient())
             {
                 return c.PostAsJsonAsync("sendMessage", query).ContinueWith(task =>
                 {
-                    return task.Result.Content.ReadAsAsync<TelegramResponse<Message>>();
+                    return task.Result.Content.ReadAsAsync<Response<Message>>();
                 }).Result;
             }
         }
-
     }
 }

@@ -48,6 +48,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Event.cs" />
+    <Compile Include="MessageHandler.cs" />
+    <Compile Include="MessagePoller.cs" />
+    <Compile Include="MessageQueue.cs" />
     <Compile Include="Telegram\Audio.cs" />
     <Compile Include="Telegram\CallbackQuery.cs" />
     <Compile Include="Telegram\Chat.cs" />
