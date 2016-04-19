@@ -51,7 +51,8 @@
     <Compile Include="MessageHandler.cs" />
     <Compile Include="MessagePoller.cs" />
     <Compile Include="MessageQueue.cs" />
-    <Compile Include="Session.cs" />
+    <Compile Include="MessageSender.cs" />
+    <Compile Include="SessionContext.cs" />
     <Compile Include="SessionStorage.cs" />
     <Compile Include="Telegram\Audio.cs" />
     <Compile Include="Telegram\CallbackQuery.cs" />

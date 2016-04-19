@@ -14,6 +14,7 @@ namespace TelegramSouls.Server.CLI
             builder.RegisterType<SessionStorage>().SingleInstance();
             builder.RegisterType<MessagePoller>().SingleInstance();
             builder.RegisterType<MessageHandler>().SingleInstance();
+            builder.RegisterType<MessageSender>().SingleInstance();
 
             using (var container = builder.Build())
             using (var scope = container.BeginLifetimeScope())

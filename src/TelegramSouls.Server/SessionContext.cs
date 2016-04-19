@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 
 namespace TelegramSouls.Server
 {
-    public class Session
+    public class SessionContext
     {
         public long Id { get; private set; }
         public string Username { get; private set; }
-        public string RoomID { get; set; }
+        public string Room { get; set; }
+        public bool InGame { get; set; }
 
-        public Session(long id, string username)
+        public SessionContext(long id, string username)
         {
             Id = id;
             Username = username;
@@ -20,12 +21,12 @@ namespace TelegramSouls.Server
 
         public void Load()
         {
-            //
+            Room = "Default";
+            InGame = false;
         }
 
         public void Persist()
         {
-            //
         }
     }
 }

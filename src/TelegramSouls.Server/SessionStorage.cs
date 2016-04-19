@@ -9,21 +9,33 @@ namespace TelegramSouls.Server
 {
     public class SessionStorage
     {
-        private ConcurrentDictionary<long, Session> _sessions;
+        private ConcurrentDictionary<long, SessionContext> _sessions;
 
         public SessionStorage()
         {
-            _sessions = new ConcurrentDictionary<long, Session>();
+            _sessions = new ConcurrentDictionary<long, SessionContext>();
         }
 
-        public Session Create(long id, string username)
+        public SessionContext Create(long id, string username)
         {
             var session = _sessions.GetOrAdd(id, userId => // TODO use factory to inject persiting service
             {
-                var s = new Session(id, username);
+                var s = new SessionContext(id, username);
                 s.Load();
                 return s;
             });
+
+            return session;
+        }
+
+        public SessionContext Get(long id)
+        {
+            SessionContext session;
+
+            if (!_sessions.TryGetValue(id, out session))
+            {
+                throw new InvalidOperationException();
+            }
 
             return session;
         }
@@ -33,14 +45,14 @@ namespace TelegramSouls.Server
             return _sessions.ContainsKey(id);
         }
 
-        public IEnumerable<Session> GetSessions()
+        public IEnumerable<SessionContext> GetSessions()
         {
             return _sessions.Values;
         }
 
         public void Abandon(long id)
         {
-            Session session;
+            SessionContext session;
             _sessions.TryRemove(id, out session);
             session.Persist();
         }

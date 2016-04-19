@@ -8,36 +8,18 @@ using System;
 
 namespace TelegramSouls.Server
 {
-    class User
-    {
-        public long Id;
-        public string Username;
-    }
-
     public class MessageHandler : IDisposable 
     {
         private TelegramClient _client;
         private MessageQueue _queue;
         private CancellationTokenSource _cancellationTokenSource;
 
-        public MessageHandler(TelegramClient client, MessageQueue queue,
+        public MessageHandler(MessageSender sender, MessageQueue queue,
             SessionStorage sessions)
         {
-            _client = client;
+            _sender = sender;
             _queue = queue;
             _sessions = sessions;
-        }
-
-        private void Broadcast(long userId, string text)
-        {
-            foreach (var user in _sessions.GetSessions().Where(i => i.Id != userId))
-            {
-                _client.SendMessage(new SendMessageQuery()
-                {
-                    ChatId = user.Id,
-                    Text = text
-                });
-            }
         }
 
         private void Handle()
@@ -49,10 +31,9 @@ namespace TelegramSouls.Server
                 {
                     if (!_sessions.IsSessionActive(message.From.Id))
                     {
-                        _sessions.Create(message.From.Id, message.From.Username);
+                        var context = _sessions.Create(message.From.Id, message.From.Username);
+                        _sender.SendToRoom(context, string.Format("Такой-то хер {0} вошел, громко хлопнув дверью.", message.From.Username));
                     }
-
-                    Broadcast(message.From.Id, string.Format("Такой-то хер {0} вошел, громко хлопнув дверью.", message.From.Username));
 
                     return;
                 }
@@ -62,25 +43,22 @@ namespace TelegramSouls.Server
                     return;
                 }
 
+                var sessionContext = _sessions.Get(message.From.Id);
+
                 if (string.Equals(message.Text, "/stop", System.StringComparison.OrdinalIgnoreCase))
                 {
-                    _sessions.Abandon(message.From.Id);
+                    _sender.SendToRoom(sessionContext, string.Format("Такой-то хер {0} безвременно покинул нас.", message.From.Username));
+                    _sessions.Abandon(sessionContext.Id);
                 }
 
                 if (string.Equals(message.Text, "/who", System.StringComparison.OrdinalIgnoreCase))
                 {
                     var list = string.Join(", ", _sessions.GetSessions().Select(v => v.Username));
-                    _client.SendMessage(new SendMessageQuery()
-                    {
-                        ChatId = message.From.Id,
-                        Text = list,
-                        ReplyToMessageId = message.MessageId
-                    });
-
+                    _sender.ReplyTo(sessionContext, message.MessageId, list);                    
                     return;
                 }
 
-                Broadcast(message.From.Id, string.Format("{0}: {1}", message.From, message.Text));
+                _sender.SendToRoom(sessionContext, string.Format("{0}: {1}", sessionContext.Username, message.Text));
             }
         }
 
@@ -99,6 +77,7 @@ namespace TelegramSouls.Server
 
         private bool _disposed = false;
         private SessionStorage _sessions;
+        private MessageSender _sender;
 
         public void Dispose()
         {
