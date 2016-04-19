@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using TelegramSouls.Server.Telegram;
 
 namespace TelegramSouls.Server
 {

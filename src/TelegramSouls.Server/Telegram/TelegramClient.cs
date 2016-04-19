@@ -5,13 +5,13 @@ using System.Threading.Tasks;
 
 namespace TelegramSouls.Server.Telegram
 {
-    public class Client
+    public class TelegramClient
     {
         private readonly string _baseUri = "https://api.telegram.org/bot{0}/";
 
         private string _token;
 
-        public Client(string token)
+        public TelegramClient(string token)
         {
             _token = token;
         }

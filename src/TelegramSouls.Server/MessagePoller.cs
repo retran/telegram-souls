@@ -6,14 +6,14 @@ using TelegramSouls.Server.Telegram;
 
 namespace TelegramSouls.Server
 {
-    public class MessagePoller
+    public class MessagePoller : IDisposable
     {
-        private Client _client;
+        private TelegramClient _client;
         private MessageQueue _queue;
         private long _offset = 0;
         private CancellationTokenSource _cancellationTokenSource;
 
-        public MessagePoller(Client client, MessageQueue queue)
+        public MessagePoller(TelegramClient client, MessageQueue queue)
         {
             _client = client;
             _queue = queue;
@@ -35,14 +35,7 @@ namespace TelegramSouls.Server
             {
                 if (string.Equals(update.Message.Chat.Type, "private", System.StringComparison.OrdinalIgnoreCase))
                 {
-                    _queue.Enqueue(new Message()
-                    {
-                        UserId = update.Message.Chat.Id,
-                        EventId = update.Message.MessageId,
-                        Text = update.Message.Text,
-                        TimeStamp = DateTime.Now,
-                        Username = update.Message.From.Username
-                    });
+                    _queue.Enqueue(update.Message);
                     Console.WriteLine("{0} {1}: {2}", DateTime.Now, update.Message.From.Username, update.Message.Text);
                 }
             }
@@ -61,9 +54,32 @@ namespace TelegramSouls.Server
             });
         }
 
-        public void Stop()
+        private bool _disposed = false;
+
+        public void Dispose()
         {
-            _cancellationTokenSource.Cancel();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    // ...
+                }
+
+                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource.Dispose();
+                _disposed = true;
+            }
+        }
+
+        ~MessagePoller()
+        {
+            Dispose(false);
         }
     }
 }

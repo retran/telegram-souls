@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Autofac;
+using System;
 using TelegramSouls.Server.Telegram;
 
 namespace TelegramSouls.Server.CLI
@@ -7,19 +8,20 @@ namespace TelegramSouls.Server.CLI
     {
         static void Main()
         {
-            var c = new Client("188718743:AAEi9xE4Y8l-0q1KlqtsOYUEKViW6pw0y2A");
-            var queue = new MessageQueue();
+            var builder = new ContainerBuilder();
+            builder.RegisterInstance(new TelegramClient("188718743:AAEi9xE4Y8l-0q1KlqtsOYUEKViW6pw0y2A")).As<TelegramClient>();
+            builder.RegisterInstance(new MessageQueue()).As<MessageQueue>();
+            builder.RegisterType<SessionStorage>().SingleInstance();
+            builder.RegisterType<MessagePoller>().SingleInstance();
+            builder.RegisterType<MessageHandler>().SingleInstance();
 
-            var poller = new MessagePoller(c, queue);
-            var handler = new MessageHandler(c, queue);
-
-            poller.Start();
-            handler.Start();
-
-            Console.ReadKey();
-
-            handler.Stop();
-            poller.Stop();
+            using (var container = builder.Build())
+            using (var scope = container.BeginLifetimeScope())
+            {
+                scope.Resolve<MessagePoller>().Start();
+                scope.Resolve<MessageHandler>().Start();
+                Console.ReadKey();
+            }
         }
     }
 }

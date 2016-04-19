@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using TelegramSouls.Server.Telegram;
+using System;
 
 namespace TelegramSouls.Server
 {
@@ -13,24 +14,23 @@ namespace TelegramSouls.Server
         public string Username;
     }
 
-    public class MessageHandler
+    public class MessageHandler : IDisposable 
     {
-        private Client _client;
+        private TelegramClient _client;
         private MessageQueue _queue;
         private CancellationTokenSource _cancellationTokenSource;
 
-        private ConcurrentDictionary<long, User> _sessions;
-
-        public MessageHandler(Client client, MessageQueue queue)
+        public MessageHandler(TelegramClient client, MessageQueue queue,
+            SessionStorage sessions)
         {
             _client = client;
             _queue = queue;
-            _sessions = new ConcurrentDictionary<long, User>();
+            _sessions = sessions;
         }
 
         private void Broadcast(long userId, string text)
         {
-            foreach (var user in _sessions.Values.Where(i => i.Id != userId))
+            foreach (var user in _sessions.GetSessions().Where(i => i.Id != userId))
             {
                 _client.SendMessage(new SendMessageQuery()
                 {
@@ -47,45 +47,40 @@ namespace TelegramSouls.Server
             {
                 if (string.Equals(message.Text, "/start", System.StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!_sessions.ContainsKey(message.UserId))
+                    if (!_sessions.IsSessionActive(message.From.Id))
                     {
-                        _sessions.TryAdd(message.UserId, new User()
-                        {
-                            Id = message.UserId,
-                            Username = message.Username
-                        });
+                        _sessions.Create(message.From.Id, message.From.Username);
                     }
 
-                    Broadcast(message.UserId, string.Format("Такой-то хер {0} вошел, громко хлопнув дверью.", message.Username));
+                    Broadcast(message.From.Id, string.Format("Такой-то хер {0} вошел, громко хлопнув дверью.", message.From.Username));
 
                     return;
                 }
 
-                if (!_sessions.ContainsKey(message.UserId))
+                if (!_sessions.IsSessionActive(message.From.Id))
                 {
                     return;
                 }
 
                 if (string.Equals(message.Text, "/stop", System.StringComparison.OrdinalIgnoreCase))
                 {
-                    User user;
-                    _sessions.TryRemove(message.UserId, out user);
+                    _sessions.Abandon(message.From.Id);
                 }
 
                 if (string.Equals(message.Text, "/who", System.StringComparison.OrdinalIgnoreCase))
                 {
-                    var list = string.Join(", ", _sessions.Values.Select(v => v.Username));
+                    var list = string.Join(", ", _sessions.GetSessions().Select(v => v.Username));
                     _client.SendMessage(new SendMessageQuery()
                     {
-                        ChatId = message.UserId,
+                        ChatId = message.From.Id,
                         Text = list,
-                        ReplyToMessageId = message.EventId
+                        ReplyToMessageId = message.MessageId
                     });
 
                     return;
                 }
 
-                Broadcast(message.UserId, string.Format("{0}: {1}", message.Username, message.Text));
+                Broadcast(message.From.Id, string.Format("{0}: {1}", message.From, message.Text));
             }
         }
 
@@ -102,9 +97,33 @@ namespace TelegramSouls.Server
             });
         }
 
-        public void Stop()
+        private bool _disposed = false;
+        private SessionStorage _sessions;
+
+        public void Dispose()
         {
-            _cancellationTokenSource.Cancel();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    // ...
+                }
+
+                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource.Dispose();
+                _disposed = true;
+            }
+        }
+
+        ~MessageHandler()
+        {
+            Dispose(false);
         }
     }
 }
