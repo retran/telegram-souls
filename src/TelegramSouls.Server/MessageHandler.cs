@@ -1,17 +1,17 @@
-﻿using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using TelegramSouls.Server.Telegram;
 using System;
 
 namespace TelegramSouls.Server
 {
-    public class MessageHandler : IDisposable 
+    public class MessageHandler : IDisposable
     {
-        private TelegramClient _client;
+        private SessionStorage _sessions;
+        private MessageSender _sender;
         private MessageQueue _queue;
+
+        private bool _disposed = false;
         private CancellationTokenSource _cancellationTokenSource;
 
         public MessageHandler(MessageSender sender, MessageQueue queue,
@@ -54,7 +54,7 @@ namespace TelegramSouls.Server
                 if (string.Equals(message.Text, "/who", System.StringComparison.OrdinalIgnoreCase))
                 {
                     var list = string.Join(", ", _sessions.GetSessions().Select(v => v.Username));
-                    _sender.ReplyTo(sessionContext, message.MessageId, list);                    
+                    _sender.ReplyTo(sessionContext, message.MessageId, list);
                     return;
                 }
 
@@ -74,10 +74,6 @@ namespace TelegramSouls.Server
                 }
             });
         }
-
-        private bool _disposed = false;
-        private SessionStorage _sessions;
-        private MessageSender _sender;
 
         public void Dispose()
         {
