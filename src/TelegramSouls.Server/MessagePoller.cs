@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,7 +37,7 @@ namespace TelegramSouls.Server
                 if (string.Equals(update.Message.Chat.Type, "private", System.StringComparison.OrdinalIgnoreCase))
                 {
                     _queue.Enqueue(update.Message);
-                    Console.WriteLine("{0} {1}: {2}", DateTime.Now, update.Message.From.Username, update.Message.Text);
+                    Trace.WriteLine(string.Format("{0}\t{1}\t{2}", DateTime.Now, update.Message.From.Username, update.Message.Text));
                 }
             }
         }
