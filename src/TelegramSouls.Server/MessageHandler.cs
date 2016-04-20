@@ -51,6 +51,7 @@ namespace TelegramSouls.Server
                 {
                     _sender.SendToRoom(sessionContext, string.Format("{0} безвременно покинул нас.", message.From.Username));
                     _sessions.Abandon(sessionContext.Id);
+                    return;
                 }
 
                 if (string.Equals(message.Text, "/who", System.StringComparison.OrdinalIgnoreCase))
@@ -63,26 +64,31 @@ namespace TelegramSouls.Server
                 if (string.Equals(message.Text, "|Север|", StringComparison.OrdinalIgnoreCase))
                 {
                     sessionContext.GetRoom().GoNorth(sessionContext);
+                    return;
                 }
 
                 if (string.Equals(message.Text, "|Юг|", StringComparison.OrdinalIgnoreCase))
                 {
                     sessionContext.GetRoom().GoSouth(sessionContext);
+                    return;
                 }
 
                 if (string.Equals(message.Text, "|Восток|", StringComparison.OrdinalIgnoreCase))
                 {
                     sessionContext.GetRoom().GoEast(sessionContext);
+                    return;
                 }
 
                 if (string.Equals(message.Text, "|Запад|", StringComparison.OrdinalIgnoreCase))
                 {
                     sessionContext.GetRoom().GoWest(sessionContext);
+                    return;
                 }
 
                 if (string.Equals(message.Text, "|Смотреть|", StringComparison.OrdinalIgnoreCase))
                 {
                     sessionContext.GetRoom().Look(sessionContext);
+                    return;
                 }
 
                 _sender.SendToRoom(sessionContext, string.Format("{0}: {1}", sessionContext.Username, message.Text));
