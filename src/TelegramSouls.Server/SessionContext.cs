@@ -44,7 +44,7 @@ namespace TelegramSouls.Server
 
         public void Load()
         {
-            RoomId = "StartRoom";
+            RoomId = "Entrance";
             InGame = false;
         }
 

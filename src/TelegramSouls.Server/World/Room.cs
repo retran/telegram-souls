@@ -31,10 +31,15 @@ namespace TelegramSouls.Server.World
 
             buttons.Add(new KeyboardButton()
             {
-                Text = "|Смотреть|"
+                Text = "|Осмотреть|"
             });
 
             return buttons.ToArray();
+        }
+
+        public virtual bool ProcessContextAction(SessionContext context, string text)
+        {
+            return false;
         }
 
 

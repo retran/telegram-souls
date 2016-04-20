@@ -32,7 +32,7 @@ namespace TelegramSouls.Server
                     if (!_sessions.IsSessionActive(message.From.Id))
                     {
                         var context = _sessions.Create(message.From.Id, message.From.Username);
-                        _sender.SendToRoom(context, string.Format("{0} вошел, громко хлопнув дверью.", message.From.Username));
+                        _sender.SendToRoom(context, string.Format("{0} материализовался из воздуха.", message.From.Username));
                         context.GetRoom().Look(context);
                     }
 
@@ -49,7 +49,7 @@ namespace TelegramSouls.Server
 
                 if (string.Equals(message.Text, "/stop", System.StringComparison.OrdinalIgnoreCase))
                 {
-                    _sender.SendToRoom(sessionContext, string.Format("{0} безвременно покинул нас.", message.From.Username));
+                    _sender.SendToRoom(sessionContext, string.Format("{0} медленно растворился в воздухе.", message.From.Username));
                     _sessions.Abandon(sessionContext.Id);
                     return;
                 }
@@ -88,6 +88,11 @@ namespace TelegramSouls.Server
                 if (string.Equals(message.Text, "|Смотреть|", StringComparison.OrdinalIgnoreCase))
                 {
                     sessionContext.GetRoom().Look(sessionContext);
+                    return;
+                }
+
+                if (sessionContext.GetRoom().ProcessContextAction(sessionContext, message.Text))
+                {
                     return;
                 }
 
