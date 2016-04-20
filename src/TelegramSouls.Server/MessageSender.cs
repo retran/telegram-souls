@@ -44,7 +44,57 @@ namespace TelegramSouls.Server
             {
                 ChatId = context.Id,
                 Text = text,
-                ReplyToMessageId = messageId
+                ReplyToMessageId = messageId,
+                ReplyMarkup = new ReplyKeyboardMarkup()
+                {
+                    Keyboard = new KeyboardButton[][]
+                        {
+                            new KeyboardButton[]
+                            {
+                                new KeyboardButton()
+                                {
+                                    Text = "|Осмотреть|"
+                                },
+                                new KeyboardButton()
+                                {
+                                    Text = "|Взять|"
+                                },
+                                new KeyboardButton()
+                                {
+                                    Text = "|Атаковать|"
+                                }
+                            },
+                            new KeyboardButton[]
+                            {
+                                new KeyboardButton()
+                                {
+                                    Text = "|Север|"
+                                },
+                                new KeyboardButton()
+                                {
+                                    Text = "|Восток|"                                
+                                },
+                                new KeyboardButton()
+                                {
+                                    Text = "|Юг|"
+                                },
+                                new KeyboardButton()
+                                {
+                                    Text = "|Запад|"
+                                },
+                                new KeyboardButton()
+                                {
+                                    Text = "|Вверх|"
+                                },
+                                new KeyboardButton()
+                                {
+                                    Text = "|Вниз|"
+                                }
+
+                            }
+                        },
+                    ResizeKeyboard = true
+                }
             });
         }
 

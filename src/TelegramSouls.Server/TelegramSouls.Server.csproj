@@ -58,6 +58,8 @@
     <Compile Include="Telegram\CallbackQuery.cs" />
     <Compile Include="Telegram\Chat.cs" />
     <Compile Include="Telegram\ChosenInlineResult.cs" />
+    <Compile Include="Telegram\KeyboardButton.cs" />
+    <Compile Include="Telegram\ReplyKeyboardMarkup.cs" />
     <Compile Include="Telegram\TelegramClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Telegram\Contact.cs" />
