@@ -32,7 +32,8 @@ namespace TelegramSouls.Server
                     if (!_sessions.IsSessionActive(message.From.Id))
                     {
                         var context = _sessions.Create(message.From.Id, message.From.Username);
-                        _sender.SendToRoom(context, string.Format("Такой-то хер {0} вошел, громко хлопнув дверью.", message.From.Username));
+                        _sender.SendToRoom(context, string.Format("{0} вошел, громко хлопнув дверью.", message.From.Username));
+                        context.GetRoom().Look(context);
                     }
 
                     return;
@@ -43,19 +44,45 @@ namespace TelegramSouls.Server
                     return;
                 }
 
-                var sessionContext = _sessions.Get(message.From.Id);
+                var sessionContext = _sessions.Get(message);
+                sessionContext.ReplyId = message.MessageId;
 
                 if (string.Equals(message.Text, "/stop", System.StringComparison.OrdinalIgnoreCase))
                 {
-                    _sender.SendToRoom(sessionContext, string.Format("Такой-то хер {0} безвременно покинул нас.", message.From.Username));
+                    _sender.SendToRoom(sessionContext, string.Format("{0} безвременно покинул нас.", message.From.Username));
                     _sessions.Abandon(sessionContext.Id);
                 }
 
                 if (string.Equals(message.Text, "/who", System.StringComparison.OrdinalIgnoreCase))
                 {
                     var list = string.Join(", ", _sessions.GetSessions().Select(v => v.Username));
-                    _sender.ReplyTo(sessionContext, message.MessageId, list);
+                    _sender.ReplyTo(sessionContext, list);
                     return;
+                }
+
+                if (string.Equals(message.Text, "|Север|", StringComparison.OrdinalIgnoreCase))
+                {
+                    sessionContext.GetRoom().GoNorth(sessionContext);
+                }
+
+                if (string.Equals(message.Text, "|Юг|", StringComparison.OrdinalIgnoreCase))
+                {
+                    sessionContext.GetRoom().GoSouth(sessionContext);
+                }
+
+                if (string.Equals(message.Text, "|Восток|", StringComparison.OrdinalIgnoreCase))
+                {
+                    sessionContext.GetRoom().GoEast(sessionContext);
+                }
+
+                if (string.Equals(message.Text, "|Запад|", StringComparison.OrdinalIgnoreCase))
+                {
+                    sessionContext.GetRoom().GoWest(sessionContext);
+                }
+
+                if (string.Equals(message.Text, "|Смотреть|", StringComparison.OrdinalIgnoreCase))
+                {
+                    sessionContext.GetRoom().Look(sessionContext);
                 }
 
                 _sender.SendToRoom(sessionContext, string.Format("{0}: {1}", sessionContext.Username, message.Text));

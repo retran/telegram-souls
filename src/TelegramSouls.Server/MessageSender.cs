@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using Autofac;
+using System.Linq;
 using TelegramSouls.Server.Telegram;
 
 namespace TelegramSouls.Server
@@ -6,17 +7,18 @@ namespace TelegramSouls.Server
     public class MessageSender
     {
         private TelegramClient _client;
-        private SessionStorage _sessions;
+        private ILifetimeScope _scope;
 
-        public MessageSender(TelegramClient client, SessionStorage sessions)
+        public MessageSender(ILifetimeScope scope, TelegramClient client)
         {
             _client = client;
-            _sessions = sessions;
+            _scope = scope;
         }
 
         public void Broadcast(SessionContext context, string text)
         {
-            foreach (var session in _sessions.GetSessions().Where(i => i.Id != context.Id))
+            var sessions = _scope.Resolve<SessionStorage>().GetSessions();
+            foreach (var session in sessions.Where(i => i.Id != context.Id))
             {
                 _client.SendMessage(new SendMessageQuery()
                 {
@@ -28,71 +30,32 @@ namespace TelegramSouls.Server
 
         public void SendToRoom(SessionContext context, string text)
         {
-            foreach (var session in _sessions.GetSessions().Where(i => i.Id != context.Id && string.Equals(i.Room, context.Room)))
+            var sessions = _scope.Resolve<SessionStorage>().GetSessions();
+            foreach (var session in sessions.Where(i => i.Id != context.Id && string.Equals(i.RoomId, context.RoomId)))
             {
                 _client.SendMessage(new SendMessageQuery()
                 {
                     ChatId = session.Id,
-                    Text = text
+                    Text = text,
+                    ReplyMarkup = new ReplyKeyboardMarkup()
+                    {
+                        Keyboard = session.GetKeyboard(),
+                        ResizeKeyboard = true
+                    }
                 });
             }
         }
 
-        public void ReplyTo(SessionContext context, long messageId, string text)
+        public void ReplyTo(SessionContext context, string text)
         {
             _client.SendMessage(new SendMessageQuery()
             {
                 ChatId = context.Id,
                 Text = text,
-                ReplyToMessageId = messageId,
+                ReplyToMessageId = context.ReplyId,
                 ReplyMarkup = new ReplyKeyboardMarkup()
                 {
-                    Keyboard = new KeyboardButton[][]
-                        {
-                            new KeyboardButton[]
-                            {
-                                new KeyboardButton()
-                                {
-                                    Text = "|Осмотреть|"
-                                },
-                                new KeyboardButton()
-                                {
-                                    Text = "|Взять|"
-                                },
-                                new KeyboardButton()
-                                {
-                                    Text = "|Атаковать|"
-                                }
-                            },
-                            new KeyboardButton[]
-                            {
-                                new KeyboardButton()
-                                {
-                                    Text = "|Север|"
-                                },
-                                new KeyboardButton()
-                                {
-                                    Text = "|Восток|"                                
-                                },
-                                new KeyboardButton()
-                                {
-                                    Text = "|Юг|"
-                                },
-                                new KeyboardButton()
-                                {
-                                    Text = "|Запад|"
-                                },
-                                new KeyboardButton()
-                                {
-                                    Text = "|Вверх|"
-                                },
-                                new KeyboardButton()
-                                {
-                                    Text = "|Вниз|"
-                                }
-
-                            }
-                        },
+                    Keyboard = context.GetKeyboard(),
                     ResizeKeyboard = true
                 }
             });
@@ -103,7 +66,12 @@ namespace TelegramSouls.Server
             _client.SendMessage(new SendMessageQuery()
             {
                 ChatId = context.Id,
-                Text = text
+                Text = text,
+                ReplyMarkup = new ReplyKeyboardMarkup()
+                {
+                    Keyboard = context.GetKeyboard(),
+                    ResizeKeyboard = true
+                }
             });
         }
     }

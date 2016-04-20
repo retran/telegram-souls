@@ -1,23 +1,29 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using TelegramSouls.Server.Telegram;
+using TelegramSouls.Server.World;
 
 namespace TelegramSouls.Server
 {
     public class SessionStorage
     {
         private ConcurrentDictionary<long, SessionContext> _sessions;
+        private Area _area;
+        private MessageSender _sender;
+        private SessionContextFactory _sessionContextFactory;
 
-        public SessionStorage()
+        public SessionStorage(SessionContextFactory sessionContextFactory)
         {
             _sessions = new ConcurrentDictionary<long, SessionContext>();
+            _sessionContextFactory = sessionContextFactory;
         }
 
         public SessionContext Create(long id, string username)
         {
             var session = _sessions.GetOrAdd(id, userId => // TODO use factory to inject persiting service
             {
-                var s = new SessionContext(id, username);
+                var s = _sessionContextFactory.Create(userId, username);
                 s.Load();
                 return s;
             });
@@ -25,11 +31,11 @@ namespace TelegramSouls.Server
             return session;
         }
 
-        public SessionContext Get(long id)
+        public SessionContext Get(Message message)
         {
             SessionContext session;
 
-            if (!_sessions.TryGetValue(id, out session))
+            if (!_sessions.TryGetValue(message.From.Id, out session))
             {
                 throw new InvalidOperationException();
             }

@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Autofac">
+      <HintPath>..\packages\Autofac.3.5.2\lib\portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\Autofac.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -48,10 +51,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Event.cs" />
+    <Compile Include="EventHandler.cs" />
+    <Compile Include="GoEvent.cs" />
     <Compile Include="MessageHandler.cs" />
     <Compile Include="MessagePoller.cs" />
+    <Compile Include="EventQueue .cs" />
     <Compile Include="MessageQueue.cs" />
     <Compile Include="MessageSender.cs" />
+    <Compile Include="SessionContextFactory.cs" />
+    <Compile Include="World\Room.cs" />
+    <Compile Include="World\Area.cs" />
     <Compile Include="SessionContext.cs" />
     <Compile Include="SessionStorage.cs" />
     <Compile Include="Telegram\Audio.cs" />
@@ -80,6 +90,7 @@
     <Compile Include="Telegram\Venue.cs" />
     <Compile Include="Telegram\Video.cs" />
     <Compile Include="Telegram\Voice.cs" />
+    <Compile Include="World\StartRoom.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
