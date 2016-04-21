@@ -34,7 +34,7 @@ namespace TelegramSouls.Server.World
 
             buttons.Add(new KeyboardButton()
             {
-                Text = "|Смотреть|"
+                Text = "|Осмотреть|"
             });
 
             buttons.Add(new KeyboardButton()
@@ -88,7 +88,7 @@ namespace TelegramSouls.Server.World
 
             buttons.Add(new KeyboardButton()
             {
-                Text = "|Смотреть|"
+                Text = "|Осмотреть|"
             });
 
             buttons.Add(new KeyboardButton()

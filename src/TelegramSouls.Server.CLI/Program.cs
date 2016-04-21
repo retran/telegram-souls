@@ -29,7 +29,18 @@ namespace TelegramSouls.Server.CLI
                 scope.Resolve<EventHandler>().Start();
                 scope.Resolve<MessageHandler>().Start();
                 scope.Resolve<MessagePoller>().Start();
-                Console.ReadKey();
+
+                bool flag = false;
+                while (!flag)
+                {
+                    var key = Console.ReadKey(true);
+                    if (key.Key == ConsoleKey.D && (key.Modifiers & ConsoleModifiers.Control) != 0)
+                    {
+                        flag = true;
+                    }
+                }
+
+                scope.Resolve<MessageSender>().Broadcast("Сервер остановлен.");
             }
         }
     }

@@ -85,7 +85,7 @@ namespace TelegramSouls.Server
                     return;
                 }
 
-                if (string.Equals(message.Text, "|Смотреть|", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(message.Text, "|Осмотреть|", StringComparison.OrdinalIgnoreCase))
                 {
                     sessionContext.GetRoom().Look(sessionContext);
                     return;

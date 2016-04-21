@@ -15,6 +15,19 @@ namespace TelegramSouls.Server
             _scope = scope;
         }
 
+        public void Broadcast(string text)
+        {
+            var sessions = _scope.Resolve<SessionStorage>().GetSessions();
+            foreach (var session in sessions)
+            {
+                _client.SendMessage(new SendMessageQuery()
+                {
+                    ChatId = session.Id,
+                    Text = text
+                });
+            }
+        }
+
         public void Broadcast(SessionContext context, string text)
         {
             var sessions = _scope.Resolve<SessionStorage>().GetSessions();
